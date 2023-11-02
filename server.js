@@ -45,6 +45,16 @@ app.get("/api/notes", (req, res) => res.sendFile(path.join(__dirname, "db/db.jso
 
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public/index.html")));
 
+app.post("/api/notes", (req, res) => {
+  const newNote = {
+    title: req.body.title,
+    text: req.body.text,
+    id: uuidv4()
+  };
+
+  // add newNote to db.json file (fs.readFile/fs.writeFile?), return newNote
+});
+
 app.listen(PORT, () =>
   console.log(`Express server listening on port ${PORT}!`)
 );
