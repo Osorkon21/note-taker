@@ -1,5 +1,5 @@
 {
-  "name": "note-taker",
+  "name": "unit-11",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
@@ -11,8 +11,5 @@
   "dependencies": {
     "express": "^4.16.4",
     "uuid": "^9.0.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
   }
 }

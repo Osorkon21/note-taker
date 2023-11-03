@@ -1,14 +1,3 @@
-// uuid is the npm package that gives everything a unique ID
-
-// ```
-// AS A small business owner
-// I WANT to be able to write and save notes
-// SO THAT I can organize my thoughts and keep track of tasks I need to complete
-// ```
-
-
-// ## Acceptance Criteria
-
 //   ```
 // GIVEN a note-taking application
 // WHEN I open the Note Taker
@@ -25,16 +14,48 @@
 // THEN I am presented with empty fields to enter a new note title and the note’s text in the right-hand column
 // ```
 
-// On the back end, the application should include a `db.json` file that will be used to store and retrieve notes using the `fs` module.
-
-// The following HTML routes should be created:
-
-// * `GET /notes` should return the`notes.html` file.
-
-// * `GET *` should return the`index.html` file.
-
 // The following API routes should be created:
 
-// * `GET /api/notes` should read the `db.json` file and return all saved notes as JSON.
+// You haven’t learned how to handle DELETE requests, but this application offers that functionality on the front end.As a bonus, try to add the DELETE route to the application using the following guideline:
 
-// * `POST /api/notes` should receive a new note to save on the request body, add it to the `db.json` file, and then return the new note to the client.You'll need to find a way to give each note a unique id when it's saved(look into npm packages that could do this for you).
+//   * `DELETE /api/notes/:id` should receive a query parameter that contains the id of a note to delete.To delete a note, you'll need to read all notes from the `db.json` file, remove the note with the given `id` property, and then rewrite the notes to the `db.json` file.
+
+const express = require('express');
+const { v4: uuidv4 } = require("uuid");
+const fs = require('fs');
+const path = require("path");
+
+const app = express();
+
+const PORT = process.env.PORT || 3001;
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static("public"));
+
+app.get("/notes", (req, res) => res.sendFile(path.join(__dirname, "public/notes.html")));
+
+app.get("/api/notes", (req, res) => res.sendFile(path.join(__dirname, "db/db.json")));
+
+app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public/index.html")));
+
+app.post("/api/notes", (req, res) => {
+  const newNote = {
+    title: req.body.title,
+    text: req.body.text,
+    id: uuidv4()
+  };
+
+  fs.readFile("./db/db.json", "utf-8", (err, data) => {
+    let dbJSON = JSON.parse(data);
+    dbJSON.push(newNote);
+
+    fs.writeFile("./db/db.json", JSON.stringify(dbJSON), "utf-8", (err) => { if (err) console.error(err); });
+  });
+
+  res.send(newNote);
+});
+
+app.listen(PORT, () =>
+  console.log(`Express server listening on port ${PORT}!`)
+);
