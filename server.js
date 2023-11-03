@@ -1,61 +1,78 @@
-//   ```
-// GIVEN a note-taking application
-// WHEN I open the Note Taker
-// THEN I am presented with a landing page with a link to a notes page
-// WHEN I click on the link to the notes page
-// THEN I am presented with a page with existing notes listed in the left-hand column, plus empty fields to enter a new note title and the note’s text in the right-hand column
-// WHEN I enter a new note title and the note’s text
-// THEN a Save icon appears in the navigation at the top of the page
-// WHEN I click on the Save icon
-// THEN the new note I have entered is saved and appears in the left-hand column with the other existing notes
-// WHEN I click on an existing note in the list in the left-hand column
-// THEN that note appears in the right-hand column
-// WHEN I click on the Write icon in the navigation at the top of the page
-// THEN I am presented with empty fields to enter a new note title and the note’s text in the right-hand column
-// ```
-
-// The following API routes should be created:
-
-// You haven’t learned how to handle DELETE requests, but this application offers that functionality on the front end.As a bonus, try to add the DELETE route to the application using the following guideline:
-
-//   * `DELETE /api/notes/:id` should receive a query parameter that contains the id of a note to delete.To delete a note, you'll need to read all notes from the `db.json` file, remove the note with the given `id` property, and then rewrite the notes to the `db.json` file.
-
+// import necessary packages
 const express = require('express');
 const { v4: uuidv4 } = require("uuid");
 const fs = require('fs');
 const path = require("path");
 
+// start express
 const app = express();
 
+// choose port for express to use later
 const PORT = process.env.PORT || 3001;
 
+// necessary for express
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// necessary to serve what is in the public folder
 app.use(express.static("public"));
 
+// return notes.html
 app.get("/notes", (req, res) => res.sendFile(path.join(__dirname, "public/notes.html")));
 
+// return database as a JSON
 app.get("/api/notes", (req, res) => res.sendFile(path.join(__dirname, "db/db.json")));
 
+// return index.html by default
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public/index.html")));
 
+// handle post routes
 app.post("/api/notes", (req, res) => {
+
+  // create new note to save to database
   const newNote = {
     title: req.body.title,
     text: req.body.text,
+
+    // create unique ID for note
     id: uuidv4()
   };
 
+  // read database file
   fs.readFile("./db/db.json", "utf-8", (err, data) => {
     let dbJSON = JSON.parse(data);
+
+    // add new note to database
     dbJSON.push(newNote);
 
+    // replace old database with new database containing new note
     fs.writeFile("./db/db.json", JSON.stringify(dbJSON), "utf-8", (err) => { if (err) console.error(err); });
   });
 
+  // return new note
   res.send(newNote);
 });
 
+// delete notes from database
+app.delete("/api/notes/:id", (req, res) => {
+
+  // id of note to delete
+  const id = req.params.id;
+
+  // readFileSync is necessary here, as I ran into occasional errors with the async version
+  const dbJSON = JSON.parse(fs.readFileSync("./db/db.json", "utf-8"));
+
+  // remove note to delete from database JSON
+  const filteredJSON = dbJSON.filter((note) => note.id !== id);
+
+  // writeFileSync is necessary here, as I ran into occasional errors with the async version
+  fs.writeFileSync("./db/db.json", JSON.stringify(filteredJSON), "utf-8");
+
+  // return delete message (index.js does nothing with this, but res.send() must exist)
+  res.send(`Deleted record from database where id = ${id}`);
+});
+
+// tell express to listen on a given port
 app.listen(PORT, () =>
   console.log(`Express server listening on port ${PORT}!`)
 );
