@@ -1,5 +1,3 @@
-// uuid is the npm package that gives everything a unique ID
-
 //   ```
 // GIVEN a note-taking application
 // WHEN I open the Note Taker
